@@ -39,7 +39,7 @@
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.12.5
 - Internet connection for AI services
 - Microphone for voice commands (optional)
 
@@ -139,23 +139,11 @@ We welcome contributions! Here's how you can help:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
-
-- Built with ❤️ using Python ecosystem
-- Powered by GROQ and GEMINI AI services
-- UI framework: Eel (Python + HTML/CSS/JS)
-
-## 📞 Support
-
-- 🐛 **Found a bug?** [Open an issue](../../issues)
-- 💡 **Have a suggestion?** [Request a feature](../../issues)
-- 📺 **Stay updated**: [Subscribe on YouTube](#)
-
 ---
 
 <div align="center">
 
-**Made with ❤️ by [Utkarsh Rishi](https://github.com/yourusername)**
+**Made with ❤️ by [Utkarsh Rishi](https://instagram.com/utkarshrishii)**
 
 ⭐ **Don't forget to star the repo if you found it helpful!** ⭐
 
