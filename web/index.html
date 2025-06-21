@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FALCON Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-deep-space: #0a0f1f; /* Deeper, slightly blueish black */
+            --bg-interface: rgba(17, 24, 39, 0.85); /* Dark gray, slightly transparent for glassmorphism */
+            --primary-accent: #4A90E2; /* A vibrant, modern blue */
+            --secondary-accent: #50E3C2; /* A teal/mint green */
+            --text-primary: #E0E0E0; /* Light gray for primary text */
+            --text-secondary: #A0A0A0; /* Medium gray for secondary text */
+            --border-subtle: rgba(255, 255, 255, 0.07);
+            --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            --gradient-user: linear-gradient(135deg, var(--primary-accent) 0%, #3B71B8 100%);
+            --gradient-button: linear-gradient(135deg, var(--secondary-accent) 0%, #34C3A5 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep-space);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1500px;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .arc-container {
+            width: 480px;
+            height: 850px;
+            background-color: var(--bg-interface);
+            border-radius: 30px; /* Softer radius */
+            box-shadow: var(--shadow-soft), 0 0 0 1px var(--border-subtle);
+            overflow: hidden;
+            transform: rotateX(10deg) rotateY(-8deg) scale(0.95);
+            transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            border: 1px solid var(--border-subtle);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .arc-container:hover {
+            transform: rotateX(0) rotateY(0) scale(1);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1);
+        }
+
+        .arc-container::before { /* Subtle cosmic dust effect */
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(var(--primary-accent-rgb, 74, 144, 226), 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(var(--secondary-accent-rgb, 80, 227, 194), 0.08) 0%, transparent 35%);
+            animation: cosmic-shimmer 30s infinite alternate ease-in-out;
+            pointer-events: none;
+            z-index: 0;
+        }
+        /* Helper to set RGB values for gradients */
+        :root { --primary-accent-rgb: 74, 144, 226; --secondary-accent-rgb: 80, 227, 194; }
+
+
+        @keyframes cosmic-shimmer {
+            0% { transform: translate(0,0) scale(1); opacity: 0.7; }
+            50% { transform: translate(10px, -5px) scale(1.05); opacity: 1; }
+            100% { transform: translate(-5px, 10px) scale(1); opacity: 0.7; }
+        }
+
+        .arc-header {
+            padding: 1.25rem 1.75rem;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(10, 15, 31, 0.3); /* Slightly darker header bg */
+            flex-shrink: 0;
+            position: relative; z-index: 2;
+        }
+        .arc-header .title-group { display: flex; align-items: center; gap: 0.75rem; }
+        .arc-header .title-group .logo-icon { font-size: 1.75rem; color: var(--primary-accent); }
+        .arc-header .title { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.5px; }
+        .arc-header .status-indicator { display: flex; align-items: center; gap: 0.5rem; }
+        .arc-header .status-text { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500;}
+        .arc-header .status-dot { width: 10px; height: 10px; background-color: var(--secondary-accent); border-radius: 50%; animation: pulse-dot 1.5s infinite ease-in-out; }
+
+        @keyframes pulse-dot {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(var(--secondary-accent-rgb, 80, 227, 194), 0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(var(--secondary-accent-rgb, 80, 227, 194), 0); }
+        }
+
+        .conversation-area {
+            flex-grow: 1; overflow-y: auto; padding: 1.5rem;
+            display: flex; flex-direction: column; gap: 1.25rem;
+            scrollbar-width: thin; scrollbar-color: var(--primary-accent) transparent;
+            position: relative; z-index: 1;
+        }
+        .conversation-area::-webkit-scrollbar { width: 6px; }
+        .conversation-area::-webkit-scrollbar-track { background: transparent; }
+        .conversation-area::-webkit-scrollbar-thumb { background-color: var(--primary-accent); border-radius: 3px; }
+
+        .message {
+            max-width: 80%; padding: 0.8rem 1.3rem; border-radius: 18px;
+            position: relative; opacity: 0; transform: translateY(10px) scale(0.98);
+            animation: message-pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        @keyframes message-pop-in {
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .message.user-message {
+            align-self: flex-end;
+            background: var(--gradient-user);
+            color: white;
+            border-bottom-right-radius: 6px; /* Stylish asymmetry */
+        }
+        .message.ai-message {
+            align-self: flex-start;
+            background: rgba(43, 52, 69, 0.7); /* Slightly more opaque AI message */
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom-left-radius: 6px; /* Stylish asymmetry */
+        }
+        .message.ai-typing {
+            align-self: flex-start;
+            background: rgba(43, 52, 69, 0.7);
+            color: var(--text-secondary);
+            padding: 0.8rem 1.3rem;
+            border-radius: 18px;
+            border-bottom-left-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .typing-dot {
+            width: 8px; height: 8px; background-color: var(--text-secondary);
+            border-radius: 50%; animation: typing-bounce 1.2s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing-bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+
+        .initial-prompt {
+            align-self: center; background-color: rgba(var(--primary-accent-rgb,74,144,226),0.1);
+            color: var(--primary-accent); padding: 0.6rem 1.2rem;
+            border-radius: 999px; font-size: 0.85rem; margin-bottom: 1rem;
+            font-family: 'Space Grotesk', sans-serif; font-weight: 500;
+            border: 1px solid rgba(var(--primary-accent-rgb,74,144,226),0.3);
+            cursor: default;
+        }
+
+        .mic-button-container { /* Added container for better positioning and shadow */
+            padding: 1rem 1.5rem 1.5rem; /* Padding around button */
+            flex-shrink: 0;
+            position: relative; z-index: 2;
+            background: rgba(10, 15, 31, 0.3); /* Match header for consistency */
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .mic-button {
+            width: 100%; height: 60px; /* Fixed height */
+            background: var(--gradient-button);
+            color: var(--bg-deep-space); /* Dark text on light button for contrast */
+            border: none; border-radius: 15px; /* Softer radius */
+            display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+            font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 1rem;
+            cursor: pointer;
+            position: relative; overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 5px 15px rgba(var(--secondary-accent-rgb, 80, 227, 194), 0.3), var(--shadow-inset);
+        }
+        .mic-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(var(--secondary-accent-rgb, 80, 227, 194), 0.4), var(--shadow-inset);
+        }
+        .mic-button:active:not(:disabled) {
+            transform: translateY(0px);
+            box-shadow: 0 3px 10px rgba(var(--secondary-accent-rgb, 80, 227, 194), 0.2), var(--shadow-inset);
+        }
+        .mic-button:disabled {
+            background: #555; /* Darker grey for disabled */
+            color: #999;
+            cursor: not-allowed;
+            box-shadow: var(--shadow-inset);
+        }
+
+        .mic-button .icon { font-size: 1.3rem; }
+        .mic-button .pulse-effect {
+            position: absolute; top: 50%; left: 50%;
+            width: 0; height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .mic-button.listening .pulse-effect {
+            animation: ripple-out 1.2s infinite ease-out;
+        }
+        @keyframes ripple-out {
+            0% { width: 0; height: 0; opacity: 0.8; }
+            100% { width: 150px; height: 150px; opacity: 0; }
+        }
+
+        @media (max-width: 500px) {
+            .arc-container {
+                width: 100%; height: 100vh; border-radius: 0; transform: none;
+                backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            }
+            .mic-button-container { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="arc-container">
+        <div class="arc-header">
+            <div class="title-group">
+                <i class="fas fa-satellite-dish logo-icon"></i> <!-- Changed icon -->
+                <h1 class="title">FALCON AI</h1>
+            </div>
+            <div class="status-indicator">
+                <span class="status-text">Network Active</span>
+                <div class="status-dot"></div>
+            </div>
+        </div>
+
+        <div id="conversation-area" class="conversation-area">
+            <div class="initial-prompt">
+                Tap mic to activate FALCON
+            </div>
+        </div>
+        
+        <div class="mic-button-container">
+            <button id="mic-button" class="mic-button">
+                <div class="pulse-effect"></div>
+                <i id="mic-icon" class="fas fa-microphone icon"></i>
+                <span id="mic-text">Activate FALCON</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="/eel.js"></script>
+    <script>
+        const conversationArea = document.getElementById('conversation-area');
+        const micButton = document.getElementById('mic-button');
+        const micIcon = document.getElementById('mic-icon');
+        const micText = document.getElementById('mic-text');
+        const initialPromptDiv = document.querySelector('.initial-prompt');
+        let typingIndicatorElement = null;
+
+        let isListening = false;
+        let isProcessing = false;
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+
+            recognition.onstart = () => {
+                isListening = true;
+                isProcessing = false; // Reset processing flag
+                micButton.classList.add('listening');
+                micIcon.classList.remove('fa-microphone', 'fa-spinner', 'fa-spin');
+                micIcon.classList.add('fa-stop-circle');
+                micText.textContent = 'Listening...';
+                if (initialPromptDiv) initialPromptDiv.style.display = 'none';
+            };
+
+            recognition.onresult = async (event) => {
+                stopListeningUI(); // Stop listening UI state immediately
+                isProcessing = true; // Set processing state
+                const userQuery = event.results[0][0].transcript;
+                addMessageToUI(userQuery, true);
+                
+                showTypingIndicator();
+                updateMicButtonState('processing');
+
+                try {
+                    const result = await eel.process_user_query(userQuery)();
+                    removeTypingIndicator();
+
+                    if (result && result.response) {
+                        const aiResponseText = result.response;
+                        addMessageToUI(aiResponseText, false);
+
+                        if (result.should_speak === true) {
+                             // Check for common error phrases before speaking
+                            const errorPhrases = ["error", "apologize", "couldn't formulate", "issue processing", "neural network connection interrupted"];
+                            const shouldSkipSpeak = errorPhrases.some(phrase => aiResponseText.toLowerCase().includes(phrase));
+                            
+                            if (!shouldSkipSpeak) {
+                                eel.request_tts(aiResponseText)();
+                            } else {
+                                console.log("Skipping TTS for error/apology message:", aiResponseText);
+                            }
+                        }
+                    } else {
+                        addMessageToUI("FALCON returned an unexpected response.", false);
+                    }
+                } catch (error) {
+                    console.error("Error calling Python via Eel:", error);
+                    removeTypingIndicator();
+                    addMessageToUI('Neural network connection interrupted. Please try again.', false);
+                } finally {
+                    isProcessing = false;
+                    updateMicButtonState('idle');
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                let errorMessage = 'Speech input error. Try again.';
+                if (event.error === 'no-speech') errorMessage = 'No speech detected.';
+                else if (event.error === 'audio-capture') errorMessage = 'Microphone error.';
+                else if (event.error === 'not-allowed') errorMessage = 'Microphone access denied.';
+                
+                removeTypingIndicator(); // Ensure typing indicator is removed on error
+                addMessageToUI(errorMessage, false);
+                isProcessing = false; // Reset processing flag
+                stopListeningUI(); // Also reset listening state
+                updateMicButtonState('idle');
+            };
+
+            recognition.onend = () => {
+                // This onend can be triggered by recognition.stop() or naturally.
+                // If it's not already processing a result, reset the UI.
+                if (!isProcessing) {
+                    stopListeningUI();
+                    updateMicButtonState('idle');
+                }
+            };
+
+            micButton.addEventListener('click', () => {
+                if (isProcessing) return;
+
+                if (!isListening) {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        console.error("Error starting recognition:", e);
+                        addMessageToUI("Could not start listening. Mic issue?", false);
+                        updateMicButtonState('idle');
+                    }
+                } else {
+                    recognition.stop(); // This will trigger onend
+                }
+            });
+
+        } else {
+            // Fallback for browsers without SpeechRecognition
+            addMessageToUI("Your browser doesn't support speech recognition. Try Chrome or Edge.", false);
+            if (initialPromptDiv) initialPromptDiv.style.display = 'none';
+            micButton.disabled = true;
+            micText.textContent = 'Not Supported';
+            micIcon.classList.remove('fa-microphone');
+            micIcon.classList.add('fa-times-circle');
+        }
+
+        function stopListeningUI() {
+            isListening = false;
+            micButton.classList.remove('listening');
+        }
+        
+        function updateMicButtonState(state) {
+            micButton.classList.remove('listening'); // General reset
+            switch(state) {
+                case 'listening':
+                    isListening = true; isProcessing = false;
+                    micButton.classList.add('listening');
+                    micIcon.className = 'fas fa-stop-circle icon';
+                    micText.textContent = 'Listening...';
+                    break;
+                case 'processing':
+                    isListening = false; isProcessing = true;
+                    micIcon.className = 'fas fa-spinner fa-spin icon';
+                    micText.textContent = 'Falcon Processing...';
+                    break;
+                case 'idle':
+                default:
+                    isListening = false; isProcessing = false;
+                    micIcon.className = 'fas fa-microphone icon';
+                    micText.textContent = 'Activate Falcon';
+                    break;
+            }
+        }
+
+
+        function addMessageToUI(text, isUser = true, isTyping = false) {
+            if (initialPromptDiv && initialPromptDiv.style.display !== 'none') {
+                initialPromptDiv.style.display = 'none';
+            }
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            if (isTyping) {
+                messageElement.classList.add('ai-typing');
+                messageElement.id = 'ai-typing-indicator';
+                messageElement.innerHTML = `
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>`;
+                typingIndicatorElement = messageElement;
+            } else {
+                messageElement.classList.add(isUser ? 'user-message' : 'ai-message');
+                messageElement.textContent = text;
+            }
+            
+            conversationArea.appendChild(messageElement);
+            scrollToBottom();
+        }
+
+        function showTypingIndicator() {
+            if (!typingIndicatorElement) { // Add only if not already present
+                 addMessageToUI('', false, true);
+            }
+        }
+        function removeTypingIndicator() {
+            if (typingIndicatorElement) {
+                typingIndicatorElement.remove();
+                typingIndicatorElement = null;
+            }
+        }
+
+        function scrollToBottom() {
+            // A short delay helps ensure the element is fully rendered and height calculated
+            setTimeout(() => {
+                conversationArea.scrollTop = conversationArea.scrollHeight;
+            }, 50);
+        }
+
+        // Initial state update
+        updateMicButtonState('idle');
+
+    </script>
+</body>
+</html>

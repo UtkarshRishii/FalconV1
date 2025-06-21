@@ -1,0 +1,10 @@
+openai
+python-dotenv
+google-generativeai
+pollinations
+Pillow
+speechrecognition
+pygame
+eel
+pandas
+requests
