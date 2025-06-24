@@ -55,7 +55,7 @@ async def text_to_audio_file(text):
         os.remove(file_path)
 
     # Get voice from environment or use default
-    voice = os.environ.get('Voice')
+    voice = "en-CA-LiamNeural"
     
     # Convert text to speech
     communicate = edge_tts.Communicate(text, voice, pitch='+0Hz', rate='+0%')
