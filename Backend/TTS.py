@@ -5,6 +5,8 @@ import edge_tts
 import os
 import re
 import unicodedata
+import tempfile
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -41,18 +43,17 @@ def clean_text(text):
 async def text_to_audio_file(text):
     """
     Converts text to speech audio file using edge-tts.
+    Uses unique filenames to avoid file conflicts.
     
     Args:
         text (str): Text to convert to speech
     """
-    file_path = "Database/Audio/TTS.mp3"
+    # Use timestamp to create unique filename
+    timestamp = int(time.time() * 1000)
+    file_path = f"Database/TTS_{timestamp}.mp3"
     
     # Ensure the directory exists
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    
-    # Remove existing file if it exists
-    if os.path.exists(file_path):
-        os.remove(file_path)
 
     # Get voice from environment or use default
     voice = "en-CA-LiamNeural"
@@ -62,6 +63,25 @@ async def text_to_audio_file(text):
     await communicate.save(file_path)
     
     return file_path
+
+def cleanup_old_tts_files():
+    """Clean up old TTS files to prevent disk space issues."""
+    try:
+        database_dir = "Database"
+        if os.path.exists(database_dir):
+            for filename in os.listdir(database_dir):
+                if filename.startswith("TTS_") and filename.endswith(".mp3"):
+                    file_path = os.path.join(database_dir, filename)
+                    try:
+                        # Only delete files older than 5 minutes
+                        if time.time() - os.path.getctime(file_path) > 300:
+                            os.remove(file_path)
+                    except (OSError, FileNotFoundError):
+                        # File might be in use or already deleted
+                        pass
+    except Exception:
+        # Ignore cleanup errors
+        pass
 
 def text_to_speech(text, callback_func=None):
     """
@@ -75,10 +95,14 @@ def text_to_speech(text, callback_func=None):
     if callback_func is None:
         callback_func = lambda r=None: True
         
+    audio_file = None
     try:
         # Initialize pygame mixer if not already initialized
         if not pygame.mixer.get_init():
             pygame.mixer.init()
+
+        # Clean up old files first
+        cleanup_old_tts_files()
 
         # Generate the audio file
         audio_file = asyncio.run(text_to_audio_file(text))
@@ -101,6 +125,18 @@ def text_to_speech(text, callback_func=None):
         callback_func(False)
         if pygame.mixer.get_init():
             pygame.mixer.music.stop()
+            # Unload the music to release the file
+            pygame.mixer.music.unload()
+        
+        # Try to clean up the audio file after a short delay
+        if audio_file and os.path.exists(audio_file):
+            try:
+                # Small delay to ensure file is released
+                time.sleep(0.1)
+                os.remove(audio_file)
+            except (OSError, FileNotFoundError):
+                # File might still be in use, will be cleaned up later
+                pass
             
 def SpeakFalcon(text, callback_func=None):
     """
